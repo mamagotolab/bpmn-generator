@@ -182,8 +182,19 @@ function renderSearchResults(results) {
   }
 }
 
+// 公開サイト（localhost以外）で開かれているか。HTTPS公開オリジンからは
+// ブラウザの制限で各自のlocalhost:11434(Ollama)へ接続できないため案内を出す。
+function isHostedOrigin() {
+  const h = location.hostname;
+  return h !== 'localhost' && h !== '127.0.0.1' && h !== '';
+}
+
 async function checkLocalOllama() {
   if (els.provider.value !== 'ollama') return;
+  if (isHostedOrigin() && /localhost|127\.0\.0\.1/.test(els.host.value)) {
+    setStatus('この公開版ではブラウザの制限でローカルAI(Ollama)に接続できません。上でオンラインAI（自分のAPIキー）を選ぶか、GitHubからアプリを自分のPCで起動してお使いください。', 'warn');
+    return;
+  }
   try {
     await checkOllama({ host: els.host.value, model: currentModel() });
     setStatus('Ollamaに接続できました。', 'ok');

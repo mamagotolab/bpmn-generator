@@ -1,0 +1,5 @@
+.djs-element.issue .djs-visual > :first-child,
+.djs-connection.issue .djs-visual > :first-child {
+  stroke: #d92d20 !important;
+  stroke-width: 3px !important;
+}

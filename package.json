@@ -1,0 +1,19 @@
+{
+  "name": "bpmn-generator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "bpmn-auto-layout": "^1.0.1",
+    "bpmn-js": "^18.6.2",
+    "bpmn-moddle": "^9.0.4",
+    "encoding-japanese": "^2.2.0",
+    "vite": "^7.0.0",
+    "vitest": "^3.2.4"
+  }
+}

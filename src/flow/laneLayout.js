@@ -124,6 +124,26 @@ export function computeLaneLayout(flow) {
     nodeIds: flow.nodes.filter((node) => laneName(node) === name).map((node) => node.id)
   }));
 
+  // gateway等、1つの送り元から複数のedgeが出る場合に使う扇状オフセット。
+  // 兄弟edge（同じfrom）の中での通し番号を振る。
+  // タスクの高さ(80)の半分(40)を安全に超える必要がある。超えないと、迂回線が
+  // 同じレーン内の別ノードの箱を突っ切って描画される。
+  const FANOUT_STEP = 110;
+  const siblingsBySource = new Map();
+  for (const edge of flow.edges) {
+    if (!siblingsBySource.has(edge.from)) siblingsBySource.set(edge.from, []);
+    siblingsBySource.get(edge.from).push(edge);
+  }
+
+  // 連続して同じ点が並ぶwaypointsを1つにまとめる（区間が短く前後の折れ点が
+  // 同座標になったとき、長さ0の辺でbpmn-jsが混乱しないように）。
+  function dedupePoints(points) {
+    return points.filter((point, index) => {
+      const prev = points[index - 1];
+      return !prev || prev.x !== point.x || prev.y !== point.y;
+    });
+  }
+
   const nodeById = new Map(positionedNodes.map((node) => [node.id, node]));
   const edges = flow.edges.flatMap((edge, index) => {
     const source = nodeById.get(edge.from);
@@ -132,21 +152,40 @@ export function computeLaneLayout(flow) {
 
     const sourceRight = { x: source.x + source.width, y: source.y + source.height / 2 };
     const targetLeft = { x: target.x, y: target.y + target.height / 2 };
-    const waypoints =
-      sourceRight.y === targetLeft.y
-        ? [sourceRight, targetLeft]
-        : [
-            sourceRight,
-            {
-              x: targetLeft.x > sourceRight.x ? sourceRight.x + (targetLeft.x - sourceRight.x) / 2 : sourceRight.x + 40,
-              y: sourceRight.y
-            },
-            {
-              x: targetLeft.x > sourceRight.x ? sourceRight.x + (targetLeft.x - sourceRight.x) / 2 : sourceRight.x + 40,
-              y: targetLeft.y
-            },
-            targetLeft
-          ];
+    const gap = Math.max(targetLeft.x - sourceRight.x, 0);
+
+    const siblings = siblingsBySource.get(edge.from) ?? [edge];
+    const siblingIndex = siblings.indexOf(edge);
+    const siblingCount = siblings.length;
+
+    let waypoints;
+    if (siblingCount > 1) {
+      // 兄弟edgeが複数あるとき（gatewayの分岐等）は、行き先が同じ行でも上下にずらした
+      // 「専用車線」を送り元から目的地の直前まで長く走らせ、直前で元の行へ戻す。
+      // 起点直後だけで折り返すと兄弟edge同士が同じ経路を辿ってラベルが衝突するため。
+      const fanOffset = (siblingIndex - (siblingCount - 1) / 2) * FANOUT_STEP;
+      const nearBend = sourceRight.x + Math.min(25, Math.max(8, gap / 3));
+      const farBend = targetLeft.x - Math.min(25, Math.max(8, gap / 3));
+      waypoints = dedupePoints([
+        sourceRight,
+        { x: nearBend, y: sourceRight.y + fanOffset },
+        { x: farBend, y: sourceRight.y + fanOffset },
+        { x: farBend, y: targetLeft.y },
+        targetLeft
+      ]);
+    } else if (sourceRight.y === targetLeft.y) {
+      waypoints = [sourceRight, targetLeft];
+    } else {
+      // 兄弟がいない単独edgeは、送り元の直後で早めに折り曲げるだけでよい
+      // （中間地点で曲げると経路が不必要に長くなるため）。
+      const bendX = gap > 0 ? sourceRight.x + Math.min(30, gap / 2) : sourceRight.x + 30;
+      waypoints = [
+        sourceRight,
+        { x: bendX, y: sourceRight.y },
+        { x: bendX, y: targetLeft.y },
+        targetLeft
+      ];
+    }
 
     return [
       {

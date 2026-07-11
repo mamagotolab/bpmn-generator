@@ -89,6 +89,49 @@ describe('computeLaneLayout', () => {
     expect(layout.edges.find((edge) => edge.from === 'task1').waypoints).toHaveLength(4);
   });
 
+  it('gatewayから同レーン直進edgeと他レーンedgeが並ぶとき、他レーンedgeは送り元の直後で早めに折れる（経路の重なりでラベル衝突しないように）', () => {
+    const layout = computeLaneLayout({
+      nodes: [
+        { id: 'start', type: 'start', label: '開始', lane: '営業' },
+        { id: 'gateway', type: 'gateway', label: '判断', lane: '営業事務' },
+        { id: 'same', type: 'task', label: '同レーン', lane: '営業事務' },
+        { id: 'other', type: 'task', label: '他レーン', lane: '営業' }
+      ],
+      edges: [
+        { from: 'start', to: 'gateway', label: '' },
+        { from: 'gateway', to: 'same', label: '' },
+        { from: 'gateway', to: 'other', label: '' }
+      ]
+    });
+
+    const crossLaneEdge = layout.edges.find((edge) => edge.from === 'gateway' && edge.to === 'other');
+    const sourceX = nodeById(layout, 'gateway').x + nodeById(layout, 'gateway').width;
+    const bendX = crossLaneEdge.waypoints[1].x;
+    // 中間地点（同レーンedgeの終点付近）まで水平に進んでから曲がるのではなく、
+    // 送り元のすぐ近くで曲がることを固定化する。
+    expect(bendX - sourceX).toBeLessThanOrEqual(30);
+  });
+
+  it('同レーン向けの兄弟edgeが2本とも直線だと完全に重なるため、上下にずらす', () => {
+    const layout = computeLaneLayout({
+      nodes: [
+        { id: 'gateway', type: 'gateway', label: '判断', lane: '営業事務' },
+        { id: 'near', type: 'task', label: '近い', lane: '営業事務' },
+        { id: 'far', type: 'task', label: '遠い', lane: '営業事務' }
+      ],
+      edges: [
+        { from: 'gateway', to: 'near', label: 'A' },
+        { from: 'gateway', to: 'far', label: 'B' }
+      ]
+    });
+
+    const edgeToNear = layout.edges.find((edge) => edge.to === 'near');
+    const edgeToFar = layout.edges.find((edge) => edge.to === 'far');
+    // どちらも起点直後の折れ曲がり位置のY座標が、送り元の中心Yから互いに逆方向へずれ、
+    // 一致しないこと（完全に同じ経路を辿らない）。
+    expect(edgeToNear.waypoints[1].y).not.toBe(edgeToFar.waypoints[1].y);
+  });
+
   it('全レーンの幅を同じ値にする', () => {
     const layout = computeLaneLayout({
       nodes: [

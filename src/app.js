@@ -77,6 +77,7 @@ const MODEL_OPTIONS = {
     { value: 'claude-haiku-4-5', label: 'Claude Haiku 4.5（低コスト）' }
   ],
   openai: [
+    { value: 'gpt-5.6', label: 'gpt-5.6（最新）' },
     { value: 'gpt-5.5', label: 'gpt-5.5' }
   ],
   gemini: [

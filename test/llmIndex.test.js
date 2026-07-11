@@ -52,7 +52,7 @@ describe('LLM共通後処理', () => {
 
   it('プロバイダ情報を返す', () => {
     expect(providerInfo('ollama')).toMatchObject({ defaultModel: 'qwen2.5:7b-instruct', needsApiKey: false });
-    expect(providerInfo('openai')).toMatchObject({ defaultModel: 'gpt-5.5', needsApiKey: true });
+    expect(providerInfo('openai')).toMatchObject({ defaultModel: 'gpt-5.6', needsApiKey: true });
     expect(providerInfo('gemini')).toMatchObject({ defaultModel: 'gemini-2.5-flash', needsApiKey: true });
     expect(providerInfo('anthropic')).toMatchObject({ defaultModel: 'claude-opus-4-8', needsApiKey: true });
   });

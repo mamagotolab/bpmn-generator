@@ -1,4 +1,4 @@
-const DEFAULT_MODEL = 'gpt-5.5';
+const DEFAULT_MODEL = 'gpt-5.6';
 
 /**
  * @param {{ apiKey?: string, model?: string, prompt: string, schema: unknown, signal?: AbortSignal }} options

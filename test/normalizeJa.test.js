@@ -7,6 +7,12 @@ describe('normalizeJapanese', () => {
     expect(normalizeJapanese('客户へ发送し订单を处理')).toBe('顧客へ発送し注文を処理');
   });
 
+  it('営业事务のような業/务の簡体字混じりも日本語へ寄せる', () => {
+    expect(normalizeJapanese('营业事务')).toBe('営業事務');
+    expect(normalizeJapanese('営业事務')).toBe('営業事務');
+    expect(normalizeJapanese('営业事务')).toBe('営業事務');
+  });
+
   it('既に正しい日本語は不変', () => {
     expect(normalizeJapanese('営業が倉庫へ発注し会議で確認する')).toBe('営業が倉庫へ発注し会議で確認する');
   });

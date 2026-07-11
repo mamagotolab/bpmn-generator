@@ -4,14 +4,24 @@ import { flowToBpmnXml } from '../src/flow/toBpmnXml.js';
 import { sampleFlow } from './fixtures.js';
 
 describe('bpmnXmlToFlow', () => {
-  it('既知XMLから中間JSONを復元する', async () => {
+  it('LaneSetありXMLからlaneを復元する', async () => {
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" id="Definitions_1" targetNamespace="test">
   <bpmn:process id="Process_1" isExecutable="false">
-    <bpmn:startEvent id="n1" name="開始"><bpmn:documentation>lane: 営業</bpmn:documentation><bpmn:outgoing>f1</bpmn:outgoing></bpmn:startEvent>
-    <bpmn:task id="n2" name="確認"><bpmn:documentation>lane: 営業</bpmn:documentation><bpmn:incoming>f1</bpmn:incoming><bpmn:outgoing>f2</bpmn:outgoing></bpmn:task>
-    <bpmn:exclusiveGateway id="n3" name="判断"><bpmn:documentation>lane: 営業</bpmn:documentation><bpmn:incoming>f2</bpmn:incoming><bpmn:outgoing>f3</bpmn:outgoing></bpmn:exclusiveGateway>
-    <bpmn:endEvent id="n4" name="終了"><bpmn:documentation>lane: 倉庫</bpmn:documentation><bpmn:incoming>f3</bpmn:incoming></bpmn:endEvent>
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_1" name="営業">
+        <bpmn:flowNodeRef>n1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>n2</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>n3</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_2" name="倉庫">
+        <bpmn:flowNodeRef>n4</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="n1" name="開始"><bpmn:outgoing>f1</bpmn:outgoing></bpmn:startEvent>
+    <bpmn:task id="n2" name="確認"><bpmn:incoming>f1</bpmn:incoming><bpmn:outgoing>f2</bpmn:outgoing></bpmn:task>
+    <bpmn:exclusiveGateway id="n3" name="判断"><bpmn:incoming>f2</bpmn:incoming><bpmn:outgoing>f3</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:endEvent id="n4" name="終了"><bpmn:incoming>f3</bpmn:incoming></bpmn:endEvent>
     <bpmn:sequenceFlow id="f1" sourceRef="n1" targetRef="n2" />
     <bpmn:sequenceFlow id="f2" sourceRef="n2" targetRef="n3" />
     <bpmn:sequenceFlow id="f3" name="はい" sourceRef="n3" targetRef="n4" />
@@ -30,6 +40,25 @@ describe('bpmnXmlToFlow', () => {
       { from: 'n2', to: 'n3', label: '' },
       { from: 'n3', to: 'n4', label: 'はい' }
     ]);
+  });
+
+  it('LaneSetが無いXMLではlaneを空文字にする', async () => {
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" id="Definitions_1" targetNamespace="test">
+  <bpmn:process id="Process_1" isExecutable="false">
+    <bpmn:startEvent id="n1" name="開始"><bpmn:outgoing>f1</bpmn:outgoing></bpmn:startEvent>
+    <bpmn:endEvent id="n2" name="終了"><bpmn:incoming>f1</bpmn:incoming></bpmn:endEvent>
+    <bpmn:sequenceFlow id="f1" sourceRef="n1" targetRef="n2" />
+  </bpmn:process>
+</bpmn:definitions>`;
+
+    const flow = await bpmnXmlToFlow(xml);
+
+    expect(flow.nodes).toEqual([
+      { id: 'n1', type: 'start', label: '開始', lane: '' },
+      { id: 'n2', type: 'end', label: '終了', lane: '' }
+    ]);
+    expect(flow.edges).toEqual([{ from: 'n1', to: 'n2', label: '' }]);
   });
 
   it('toBpmnXmlとの往復でノードとエッジを保つ', async () => {

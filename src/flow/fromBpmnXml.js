@@ -13,14 +13,20 @@ function refId(ref) {
   return '';
 }
 
-function laneFromDocumentation(documentation) {
-  const docs = Array.isArray(documentation) ? documentation : [];
-  for (const doc of docs) {
-    const text = doc && typeof doc === 'object' && typeof doc.text === 'string' ? doc.text : '';
-    const match = text.match(/(?:^|\n)\s*lane:\s*(.+?)\s*$/m);
-    if (match) return match[1].trim();
+function mapLaneByNodeId(process) {
+  const laneByNodeId = new Map();
+  const laneSets = Array.isArray(process?.laneSets) ? process.laneSets : Array.isArray(process?.laneSet) ? process.laneSet : [];
+  const lanes = Array.isArray(laneSets[0]?.lanes) ? laneSets[0].lanes : [];
+
+  for (const lane of lanes) {
+    const flowNodeRefs = Array.isArray(lane.flowNodeRef) ? lane.flowNodeRef : [];
+    for (const flowNodeRef of flowNodeRefs) {
+      const id = refId(flowNodeRef);
+      if (id) laneByNodeId.set(id, lane.name || '');
+    }
   }
-  return '';
+
+  return laneByNodeId;
 }
 
 /**
@@ -34,6 +40,7 @@ export async function bpmnXmlToFlow(xml) {
   const { rootElement } = await moddle.fromXML(xml);
   const process = rootElement.rootElements?.find((element) => element.$type === 'bpmn:Process');
   const flowElements = Array.isArray(process?.flowElements) ? process.flowElements : [];
+  const laneByNodeId = mapLaneByNodeId(process);
 
   const nodes = flowElements
     .filter((element) => Object.prototype.hasOwnProperty.call(FLOW_TYPE_BY_BPMN_TYPE, element.$type))
@@ -41,7 +48,7 @@ export async function bpmnXmlToFlow(xml) {
       id: element.id,
       type: FLOW_TYPE_BY_BPMN_TYPE[element.$type],
       label: element.name || '',
-      lane: laneFromDocumentation(element.documentation)
+      lane: laneByNodeId.get(element.id) || ''
     }));
 
   const edges = flowElements

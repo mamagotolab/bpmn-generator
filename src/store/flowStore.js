@@ -67,7 +67,7 @@ export function exportAllJson(storage) {
 }
 
 export function importJson(text, storage) {
-  const data = JSON.parse(text);
+  const data = typeof text === 'string' ? JSON.parse(text) : text;
   const flows = Array.isArray(data) ? data : Array.isArray(data.flows) ? data.flows : [];
   let count = 0;
   for (const flow of flows) {

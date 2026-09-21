@@ -78,4 +78,11 @@ describe('flowStore', () => {
     expect(importJson(exported, restored)).toBe(3);
     expect(listFlows(restored)).toHaveLength(3);
   });
+
+  it('legacy配列とparse済みversion 1 backupを従来どおり取り込む', () => {
+    const storage = createMemoryStorage();
+    expect(importJson(JSON.stringify([{ id: 'legacy', title: '旧形式', xml: '<old />' }]), storage)).toBe(1);
+    expect(importJson({ version: 1, flows: [{ id: 'backup', title: 'バックアップ', xml: '<new />' }] }, storage)).toBe(1);
+    expect(listFlows(storage).map((record) => record.id).sort()).toEqual(['backup', 'legacy']);
+  });
 });

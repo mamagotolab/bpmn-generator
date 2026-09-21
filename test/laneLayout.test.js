@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { Worker } from 'node:worker_threads';
 import { computeLaneLayout } from '../src/flow/laneLayout.js';
 
 function nodeById(layout, id) {
@@ -10,6 +11,36 @@ function centerY(node) {
 }
 
 describe('computeLaneLayout', () => {
+  it('到達可能な循環でも各nodeを一度だけ処理して有限時間で返す', async () => {
+    const moduleUrl = new URL('../src/flow/laneLayout.js', import.meta.url).href;
+    const flow = {
+      nodes: [
+        { id: 'start', type: 'start', label: '開始', lane: '担当' },
+        { id: 'end', type: 'end', label: '終了', lane: '担当' },
+      ],
+      edges: [
+        { from: 'start', to: 'start', label: '' },
+        { from: 'start', to: 'end', label: '' },
+      ],
+    };
+    const worker = new Worker(`
+      const { parentPort } = require('node:worker_threads');
+      import(${JSON.stringify(moduleUrl)})
+        .then(({ computeLaneLayout }) => parentPort.postMessage(computeLaneLayout(${JSON.stringify(flow)}).nodes.length));
+    `, { eval: true });
+
+    try {
+      const nodeCount = await new Promise((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('layout did not terminate')), 500);
+        worker.once('message', (value) => { clearTimeout(timer); resolve(value); });
+        worker.once('error', (error) => { clearTimeout(timer); reject(error); });
+      });
+      expect(nodeCount).toBe(2);
+    } finally {
+      await worker.terminate();
+    }
+  });
+
   it('2レーンの直線フローを正しい行に置き、列を単調増加させる', () => {
     const layout = computeLaneLayout({
       nodes: [

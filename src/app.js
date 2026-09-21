@@ -11,6 +11,7 @@ import { generateFlow, providerInfo } from './llm/index.js';
 import { createModeler, getXml, loadXml } from './editor/modeler.js';
 import { highlightIssues } from './editor/highlight.js';
 import { flowToCsvRows, encodeCsv } from './export/csv.js';
+import { importFlightRecorderData, parseImportEnvelope } from './import/flightRecorder.js';
 import { startProgress } from './ui/progress.js';
 import { renderValidationPanel, selectAndCenter } from './ui/panel.js';
 import {
@@ -51,6 +52,7 @@ const els = {
   bulkConvert: $('bulkConvertButton'),
   csvUtf8: $('csvUtf8Button'),
   csvSjis: $('csvSjisButton'),
+  bpmnExport: $('bpmnExportButton'),
   jsonExport: $('jsonExportButton'),
   jsonImport: $('jsonImportInput'),
   modeler: $('modeler'),
@@ -130,7 +132,7 @@ function setStatus(text, type = 'info') {
 }
 
 function setControlsEnabled(enabled) {
-  for (const button of [els.generate, els.save, els.revalidate, els.searchButton, els.bulkConvert, els.csvUtf8, els.csvSjis, els.jsonExport]) {
+  for (const button of [els.generate, els.save, els.revalidate, els.searchButton, els.bulkConvert, els.csvUtf8, els.csvSjis, els.jsonExport, els.bpmnExport]) {
     button.disabled = !enabled;
   }
 }
@@ -337,6 +339,26 @@ async function exportCurrentCsv(encoding) {
 els.csvUtf8.addEventListener('click', () => exportCurrentCsv('utf8-bom'));
 els.csvSjis.addEventListener('click', () => exportCurrentCsv('shift-jis'));
 
+function bpmnFileName(title) {
+  const safe = String(title ?? '')
+    .replace(/[\\/:*?"<>|\u0000-\u001F]/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/[. ]+$/g, '')
+    .trim();
+  return `${safe || '無題の業務'}.bpmn`;
+}
+
+els.bpmnExport.addEventListener('click', async () => {
+  try {
+    const xml = await getXml(modeler);
+    if (!xml.trim()) throw new Error('図がありません。');
+    download(bpmnFileName(els.title.value.trim()), new TextEncoder().encode(xml), 'application/xml;charset=utf-8');
+    setStatus('BPMNファイルを書き出しました。', 'ok');
+  } catch (error) {
+    setStatus(`BPMNファイルを書き出せませんでした。${error instanceof Error ? error.message : String(error)}`, 'error');
+  }
+});
+
 els.jsonExport.addEventListener('click', () => {
   download('bpmn-flows.json', new TextEncoder().encode(exportAllJson()), 'application/json;charset=utf-8');
 });
@@ -345,8 +367,28 @@ els.jsonImport.addEventListener('change', async () => {
   const file = els.jsonImport.files?.[0];
   if (!file) return;
   try {
-    const count = importJson(await file.text());
-    setStatus(`${count}件のJSONを読み込みました。`, 'ok');
+    const text = await file.text();
+    const envelope = parseImportEnvelope(text);
+    if (envelope.kind === 'backup') {
+      const count = importJson(envelope.data);
+      setStatus(`${count}件のJSONを読み込みました。`, 'ok');
+      return;
+    }
+
+    const { record, flow, xml } = await importFlightRecorderData(envelope.data, {
+      convert: flowToBpmnXml,
+      save: saveFlow
+    });
+    currentRecordId = record.id;
+    els.title.value = record.title;
+    els.category.value = record.category;
+    try {
+      await showFlow(flow, xml);
+    } catch (error) {
+      setStatus(`保存しましたが画面に表示できませんでした。${error instanceof Error ? error.message : String(error)}`, 'error');
+      return;
+    }
+    setStatus('業務フライトレコーダーのJSONを読み込みました。', 'ok');
   } catch (error) {
     setStatus(`JSONを読み込めませんでした。${error instanceof Error ? error.message : String(error)}`, 'error');
   } finally {

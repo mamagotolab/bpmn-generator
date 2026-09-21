@@ -30,17 +30,22 @@ function computeDepths(flow) {
   }
 
   const queue = flow.nodes.filter((node) => node.type === 'start').map((node) => node.id);
+  const enqueued = new Set(queue);
+  const processed = new Set();
   for (const id of queue) depths.set(id, 0);
 
   for (let index = 0; index < queue.length; index += 1) {
     const current = queue[index];
+    if (processed.has(current)) continue;
+    processed.add(current);
     const currentDepth = depths.get(current) ?? 0;
 
     for (const next of adjacency.get(current) ?? []) {
       depths.set(next, Math.max(depths.get(next) ?? 0, currentDepth + 1));
       processedIncoming.set(next, processedIncoming.get(next) + 1);
 
-      if (processedIncoming.get(next) >= incomingCount.get(next)) {
+      if (processedIncoming.get(next) >= incomingCount.get(next) && !enqueued.has(next)) {
+        enqueued.add(next);
         queue.push(next);
       }
     }

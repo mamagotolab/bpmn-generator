@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' http://localhost:11434 https://api.openai.com https://generativelanguage.googleapis.com https://api.anthropic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; worker-src 'self' blob:;" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' http://localhost:11434 https://api.openai.com https://generativelanguage.googleapis.com https://api.anthropic.com https://cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; worker-src 'self' blob:; script-src 'self' https://static.cloudflareinsights.com" />
     <title>BPMNジェネレーター</title>
     <meta name="description" content="日本語で業務を説明すると、編集できる業務フロー図（BPMN）に変換するWebアプリです。ローカルAI（Ollama）なら業務の内容を外部に送らずに使えます。" />
     <meta property="og:title" content="BPMNジェネレーター｜ことばを、業務の地図に。" />
@@ -13,8 +13,14 @@
     <meta property="og:image" content="https://mamagotolab.com/images/ogp/bpmn-generator.png?v=20260915" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content="https://mamagotolab.com/images/ogp/bpmn-generator.png?v=20260915" />
-  </head>
+    <link rel="stylesheet" href="/_shared/homelink.css">
+</head>
   <body>
+<div class="mgl-homebar">
+  <a class="mgl-homebar-brand" href="/"><span class="mgl-homebar-mark" aria-hidden="true"></span>ママゴトラボ</a>
+  <span class="mgl-homebar-note">業務自動化の開発ラボ</span>
+  <a class="mgl-homebar-link" href="/">ホームへ<span aria-hidden="true"> →</span></a>
+</div>
     <div id="app">
       <header class="topbar">
         <div class="brand">

@@ -1,33 +1,35 @@
-/* ===== BPMNジェネレーター — SaaS UI ===== */
+/* ===== BPMNジェネレーター — SaaS UI =====
+   配色は喫茶店ラボ・発送センター・ラボと同じ濃紺＋青緑に合わせている。
+   図を描くキャンバス（.modeler）だけは紙の白のままにする（図の見え方と書き出しを変えないため）。 */
 :root {
-  --brand: #1fa463;
-  --brand-strong: #17854f;
-  --brand-deep: #0f6b41;
-  --brand-tint: #e9f7ef;
-  --brand-tint-2: #d7f0e1;
-  --brand-ring: rgba(31, 164, 99, 0.26);
-  --brand-grad: linear-gradient(135deg, #24b06e, #1a8f57);
+  --brand: #62e6dc;
+  --brand-strong: #43cfc6;
+  --brand-deep: #2f8fd8;
+  --brand-tint: #0b2b3a;
+  --brand-tint-2: #103a4a;
+  --brand-ring: rgba(98, 230, 220, 0.3);
+  --brand-grad: linear-gradient(135deg, #43cfc6, #4f9fff);
 
-  --ink: #10241b;
-  --ink-soft: #4a5a52;
-  --ink-muted: #9aa8a0;
+  --ink: #e9f6ff;
+  --ink-soft: #b9d0df;
+  --ink-muted: #91a9bd;
 
-  --bg: #eef2f0;
-  --panel: #ffffff;
-  --panel-soft: #f6faf8;
-  --line: #e4eae6;
-  --line-strong: #d2ddd6;
+  --bg: #07111f;
+  --panel: #0e2034;
+  --panel-soft: #0b1d2e;
+  --line: #24435f;
+  --line-strong: #315875;
 
-  --amber-tint: #fff7e6;
-  --amber-ink: #92600a;
-  --amber-line: #f2c879;
-  --info-tint: #eef4ff;
-  --info-ink: #2c4a86;
+  --amber-tint: #2a2110;
+  --amber-ink: #ffcf72;
+  --amber-line: rgba(255, 207, 114, 0.45);
+  --info-tint: #071827;
+  --info-ink: #9fd7ff;
 
   --radius: 10px;
   --radius-sm: 8px;
-  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
-  --shadow-md: 0 6px 20px rgba(15, 23, 42, 0.08);
+  --shadow-sm: 0 1px 2px rgba(2, 8, 19, 0.5);
+  --shadow-md: 0 18px 55px rgba(2, 8, 19, 0.45);
 }
 
 * {
@@ -63,7 +65,7 @@ textarea {
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
   padding: 9px 11px;
-  background: #fff;
+  background: var(--panel-soft);
   color: var(--ink);
   transition: border-color 0.15s, box-shadow 0.15s;
 }
@@ -111,7 +113,7 @@ button {
   padding: 0 14px;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
-  background: #fff;
+  background: var(--panel);
   color: var(--ink);
   font-weight: 600;
   cursor: pointer;
@@ -142,19 +144,19 @@ button.primary {
   min-height: 44px;
   border: none;
   background: var(--brand-grad);
-  color: #fff;
+  color: #06131f;
   font-weight: 700;
   letter-spacing: 0.02em;
-  box-shadow: 0 6px 16px rgba(26, 143, 87, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 22px rgba(98, 230, 220, 0.22);
 }
 
 button.primary:hover {
-  background: linear-gradient(135deg, #26bd76, #17854f);
-  box-shadow: 0 8px 20px rgba(26, 143, 87, 0.34);
+  background: linear-gradient(135deg, #5ce0d6, #61aaff);
+  box-shadow: 0 8px 20px rgba(98, 230, 220, 0.3);
 }
 
 button.primary:active {
-  box-shadow: 0 3px 10px rgba(26, 143, 87, 0.3);
+  box-shadow: 0 3px 10px rgba(98, 230, 220, 0.26);
 }
 
 /* ---------- Header ---------- */
@@ -169,9 +171,9 @@ button.primary:active {
   gap: 20px;
   padding: 13px 26px;
   border-bottom: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.86);
-  backdrop-filter: saturate(1.5) blur(10px);
-  box-shadow: 0 1px 0 rgba(15, 107, 65, 0.04), var(--shadow-sm);
+  background: rgba(14, 32, 52, 0.92);
+  backdrop-filter: saturate(1.4) blur(10px);
+  box-shadow: 0 1px 0 rgba(98, 230, 220, 0.12), var(--shadow-sm);
 }
 
 /* emerald hairline under header */
@@ -200,7 +202,7 @@ button.primary:active {
   height: 40px;
   border-radius: 12px;
   background: var(--brand-grad);
-  box-shadow: 0 4px 12px rgba(26, 143, 87, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 16px rgba(98, 230, 220, 0.28);
 }
 
 .topbar h1 {
@@ -244,9 +246,9 @@ button.primary:active {
 }
 
 .status-banner.error {
-  background: #fdecec;
+  background: #2a1b26;
   border-color: transparent;
-  color: #b42318;
+  color: #ffb4be;
 }
 
 /* ---------- Layout ---------- */
@@ -400,7 +402,7 @@ button.ghost:hover {
 }
 
 .tip-bad {
-  color: #c0503a;
+  color: #ff9f8f;
   font-weight: 700;
 }
 
@@ -423,7 +425,7 @@ button.ghost:hover {
 
 .api-key-note {
   background: var(--info-tint);
-  border-left: 3px solid #9db9ee;
+  border-left: 3px solid #3d6f9e;
   color: var(--info-ink);
 }
 
@@ -433,7 +435,7 @@ button.ghost:hover {
   place-items: center;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
-  background: #fff;
+  background: var(--panel);
   font-size: 13px;
   font-weight: 600;
   color: var(--ink-soft);
@@ -458,16 +460,17 @@ button.ghost:hover {
   padding: 18px;
   gap: 16px;
   background-color: var(--bg);
-  background-image: radial-gradient(rgba(15, 107, 65, 0.06) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(98, 230, 220, 0.08) 1px, transparent 1px);
   background-size: 18px 18px;
 }
 
+/* 図の紙面は白のまま。暗くすると図の線色と書き出し結果まで変わるため。 */
 .modeler {
   min-height: 420px;
-  background: var(--panel);
+  background: #ffffff;
   border: 1px solid var(--line);
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(15, 107, 65, 0.07), var(--shadow-sm);
+  box-shadow: 0 18px 40px rgba(2, 8, 19, 0.45);
   overflow: hidden;
 }
 
@@ -508,7 +511,7 @@ button.ghost:hover {
 
 .validation-item button:hover,
 .result-list button:hover {
-  background: #fff;
+  background: var(--brand-tint);
   border-color: var(--brand);
 }
 
@@ -517,14 +520,14 @@ button.ghost:hover {
   min-width: 48px;
   padding: 4px 8px;
   border-radius: 999px;
-  color: #fff;
+  color: #06131f;
   text-align: center;
   font-size: 11px;
   font-weight: 700;
 }
 
 .fatal .badge {
-  background: #d92d20;
+  background: #e0575a;
 }
 
 .fixable .badge {
@@ -532,7 +535,7 @@ button.ghost:hover {
 }
 
 .warn .badge {
-  background: #64748b;
+  background: #93b0c4;
 }
 
 .validation-ok {
@@ -571,7 +574,7 @@ button.ghost:hover {
   flex: none;
   width: 18px;
   height: 18px;
-  border: 3px solid rgba(31, 164, 99, 0.25);
+  border: 3px solid rgba(98, 230, 220, 0.3);
   border-top-color: var(--brand);
   border-radius: 50%;
   animation: spin 0.85s linear infinite;
@@ -597,7 +600,7 @@ button.ghost:hover {
 
 .sidebar::-webkit-scrollbar-thumb,
 .validation-panel::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #2f5878;
   border: 3px solid var(--bg);
   border-radius: 999px;
 }

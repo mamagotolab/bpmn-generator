@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "test": "vitest run"
+    "test": "vitest run",
+    "export": "node scripts/export-portfolio.mjs"
   },
   "dependencies": {
     "bpmn-auto-layout": "^1.0.1",
